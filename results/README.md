@@ -276,9 +276,6 @@ python scripts/run_llm_annotations_7b.py --datasets all
 
 # Specific dataset
 python scripts/run_llm_annotations_7b.py --datasets imdb
-
-# With vLLM acceleration
-python scripts/run_llm_annotations_7b_vllm.py --datasets all
 ```
 
 ### Trust Scorer
