@@ -2,6 +2,8 @@
 
 This directory contains three benchmark datasets for annotation reliability analysis.
 
+**Download processed datasets**: [Hugging Face - limbo23/cs1684models/data](https://huggingface.co/limbo23/cs1684models/tree/main/data)
+
 ---
 
 ## IMDb
