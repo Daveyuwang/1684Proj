@@ -1,0 +1,42 @@
+{
+  "dataset": "imdb",
+  "model_type": "lr",
+  "n_test": 1816,
+  "roc_auc": 0.8935963825204334,
+  "pr_auc": 0.992343482606834,
+  "brier_score": 0.03471219897297633,
+  "ece": 0.006287441566916806,
+  "policy_thresholds": {
+    "high_precision": 0.9982425307557118,
+    "balanced": 0.5645161290322579,
+    "high_coverage": 0.5
+  },
+  "policy_metrics": {
+    "high_precision": {
+      "threshold": 0.9982425307557118,
+      "coverage": 0.5379955947136564,
+      "accepted_accuracy": 0.9959058341862845,
+      "precision": 0.9959058341862845,
+      "recall": 0.5598388952819332,
+      "f1_score": 0.7167587476979742
+    },
+    "balanced": {
+      "threshold": 0.5645161290322579,
+      "coverage": 0.9944933920704846,
+      "accepted_accuracy": 0.9573643410852714,
+      "precision": 0.9573643410852714,
+      "recall": 0.9948216340621404,
+      "f1_score": 0.9757336343115124
+    },
+    "high_coverage": {
+      "threshold": 0.5,
+      "coverage": 0.9944933920704846,
+      "accepted_accuracy": 0.9573643410852714,
+      "precision": 0.9573643410852714,
+      "recall": 0.9948216340621404,
+      "f1_score": 0.9757336343115124
+    }
+  },
+  "ece_before_calibration": 0.21380693810655468,
+  "ece_after_calibration": 0.0
+}

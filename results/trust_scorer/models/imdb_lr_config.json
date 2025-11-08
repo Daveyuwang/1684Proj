@@ -1,0 +1,31 @@
+{
+  "dataset": "imdb",
+  "model_type": "lr",
+  "feature_columns": [
+    "llm_confidence_numeric",
+    "deberta_p_max",
+    "deberta_margin",
+    "deberta_entropy",
+    "llm_deberta_disagree",
+    "confidence_clash_high_low",
+    "confidence_clash_low_high",
+    "token_count",
+    "punctuation_density",
+    "negation_present"
+  ],
+  "dev_percentiles": {
+    "p_max_25": 0.9953989684581757,
+    "p_max_75": 0.9979877471923828
+  },
+  "policy_thresholds": {
+    "high_precision": 0.9982425307557118,
+    "balanced": 0.5645161290322579,
+    "high_coverage": 0.5
+  },
+  "random_state": 42,
+  "package_versions": {
+    "sklearn": "1.7.1",
+    "numpy": "2.1.2",
+    "pandas": "2.3.2"
+  }
+}

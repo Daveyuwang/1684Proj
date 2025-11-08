@@ -1,53 +1,53 @@
 {
   "dataset": "jigsaw",
-  "num_samples": 9900,
-  "num_valid": 9900,
-  "accuracy": 0.7684848484848484,
-  "precision": 0.21056691091399923,
-  "recall": 0.6902654867256637,
-  "f1_score": 0.32269503546099293,
-  "cohen_kappa": 0.22819027306406914,
-  "agreement_rate": 0.7684848484848484,
-  "average_confidence": 0.8355454545454547,
+  "num_samples": 20000,
+  "num_valid": 20000,
+  "accuracy": 0.77645,
+  "precision": 0.21739130434782608,
+  "recall": 0.6914893617021277,
+  "f1_score": 0.33078880407124683,
+  "cohen_kappa": 0.23816652463155363,
+  "agreement_rate": 0.77645,
+  "average_confidence": 0.8374800000000003,
   "classification_report": {
     "non-toxic": {
-      "precision": 0.9664705077323115,
-      "recall": 0.7752771983752332,
-      "f1-score": 0.8603801169590644,
-      "support": 9109.0
+      "precision": 0.9669504592076155,
+      "recall": 0.7838278447994783,
+      "f1-score": 0.8658122992886942,
+      "support": 18402.0
     },
     "toxic": {
-      "precision": 0.21056691091399923,
-      "recall": 0.6902654867256637,
-      "f1-score": 0.32269503546099293,
-      "support": 791.0
+      "precision": 0.21739130434782608,
+      "recall": 0.6914893617021277,
+      "f1-score": 0.33078880407124683,
+      "support": 1598.0
     },
-    "accuracy": 0.7684848484848484,
+    "accuracy": 0.77645,
     "macro avg": {
-      "precision": 0.5885187093231553,
-      "recall": 0.7327713425504485,
-      "f1-score": 0.5915375762100287,
-      "support": 9900.0
+      "precision": 0.5921708817777208,
+      "recall": 0.737658603250803,
+      "f1-score": 0.5983005516799705,
+      "support": 20000.0
     },
     "weighted avg": {
-      "precision": 0.9060745738855149,
-      "recall": 0.7684848484848484,
-      "f1-score": 0.8174196220636124,
-      "support": 9900.0
+      "precision": 0.9070606827343185,
+      "recall": 0.77645,
+      "f1-score": 0.82306392202082,
+      "support": 20000.0
     }
   },
   "confusion_matrix": [
     [
-      7062,
-      2047
+      14424,
+      3978
     ],
     [
-      245,
-      546
+      493,
+      1105
     ]
   ],
   "config": {
-    "model_name": "D:/1684Proj/models/Qwen2.5-7B-Instruct",
+    "model_name": "models/Qwen2.5-7B-Instruct",
     "model_size": "7B",
     "model_type": "Qwen2.5-7B-Instruct",
     "seed": 42,

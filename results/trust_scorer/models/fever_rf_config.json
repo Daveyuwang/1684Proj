@@ -1,0 +1,31 @@
+{
+  "dataset": "fever",
+  "model_type": "rf",
+  "feature_columns": [
+    "llm_confidence_numeric",
+    "deberta_p_max",
+    "deberta_margin",
+    "deberta_entropy",
+    "llm_deberta_disagree",
+    "confidence_clash_high_low",
+    "confidence_clash_low_high",
+    "token_count",
+    "punctuation_density",
+    "negation_present"
+  ],
+  "dev_percentiles": {
+    "p_max_25": 0.5602071583271027,
+    "p_max_75": 0.8581883013248444
+  },
+  "policy_thresholds": {
+    "high_precision": 0.7272727272727273,
+    "balanced": 0.42105263157894735,
+    "high_coverage": 0.6923076923076923
+  },
+  "random_state": 42,
+  "package_versions": {
+    "sklearn": "1.7.1",
+    "numpy": "2.1.2",
+    "pandas": "2.3.2"
+  }
+}

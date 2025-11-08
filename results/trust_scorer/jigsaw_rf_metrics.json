@@ -1,0 +1,42 @@
+{
+  "dataset": "jigsaw",
+  "model_type": "rf",
+  "n_test": 3000,
+  "roc_auc": 0.9841898206953216,
+  "pr_auc": 0.9944600798267371,
+  "brier_score": 0.03669088010423486,
+  "ece": 0.0053659806238843,
+  "policy_thresholds": {
+    "high_precision": 0.9990749306197965,
+    "balanced": 0.5,
+    "high_coverage": 0.03636363636363636
+  },
+  "policy_metrics": {
+    "high_precision": {
+      "threshold": 0.9990749306197965,
+      "coverage": 0.42433333333333334,
+      "accepted_accuracy": 0.9992144540455616,
+      "precision": 0.9992144540455616,
+      "recall": 0.5461571489909832,
+      "f1_score": 0.7062742920599667
+    },
+    "balanced": {
+      "threshold": 0.5,
+      "coverage": 0.7706666666666667,
+      "accepted_accuracy": 0.9731833910034602,
+      "precision": 0.9731833910034602,
+      "recall": 0.9660798626019751,
+      "f1_score": 0.9696186166774402
+    },
+    "high_coverage": {
+      "threshold": 0.03636363636363636,
+      "coverage": 0.9083333333333333,
+      "accepted_accuracy": 0.8539449541284404,
+      "precision": 0.8539449541284404,
+      "recall": 0.9991412623443539,
+      "f1_score": 0.9208547685001979
+    }
+  },
+  "ece_before_calibration": 0.031138661712949097,
+  "ece_after_calibration": 5.322652041339638e-17
+}

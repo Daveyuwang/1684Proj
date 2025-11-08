@@ -1,0 +1,10 @@
+Dataset,Policy,LR_Coverage,LR_Accuracy,LR_ECE,RF_Coverage,RF_Accuracy,RF_ECE
+IMDB,high-precision,53.8%,99.6%,0.006,46.9%,99.6%,0.009
+IMDB,balanced,99.4%,95.7%,0.006,97.1%,97.1%,0.009
+IMDB,high-coverage,99.4%,95.7%,0.006,97.1%,97.1%,0.009
+JIGSAW,high-precision,34.9%,99.9%,0.003,42.4%,99.9%,0.005
+JIGSAW,balanced,77.0%,97.3%,0.003,77.1%,97.3%,0.005
+JIGSAW,high-coverage,77.4%,96.9%,0.003,90.8%,85.4%,0.005
+FEVER,high-precision,42.7%,74.7%,0.040,33.5%,78.9%,0.056
+FEVER,balanced,55.9%,71.5%,0.040,59.3%,70.4%,0.056
+FEVER,high-coverage,43.9%,74.2%,0.040,48.0%,72.9%,0.056

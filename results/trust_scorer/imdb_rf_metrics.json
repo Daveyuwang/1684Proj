@@ -1,0 +1,42 @@
+{
+  "dataset": "imdb",
+  "model_type": "rf",
+  "n_test": 1816,
+  "roc_auc": 0.8864337139653595,
+  "pr_auc": 0.9918374900559116,
+  "brier_score": 0.0344342480635058,
+  "ece": 0.008976659100184211,
+  "policy_thresholds": {
+    "high_precision": 0.9983333333333333,
+    "balanced": 0.5555555555555556,
+    "high_coverage": 0.5
+  },
+  "policy_metrics": {
+    "high_precision": {
+      "threshold": 0.9983333333333333,
+      "coverage": 0.4686123348017621,
+      "accepted_accuracy": 0.9964747356051704,
+      "precision": 0.9964747356051704,
+      "recall": 0.48791714614499426,
+      "f1_score": 0.6550791811510236
+    },
+    "balanced": {
+      "threshold": 0.5555555555555556,
+      "coverage": 0.9708149779735683,
+      "accepted_accuracy": 0.970504821327283,
+      "precision": 0.970504821327283,
+      "recall": 0.9844649021864211,
+      "f1_score": 0.9774350185661239
+    },
+    "high_coverage": {
+      "threshold": 0.5,
+      "coverage": 0.9708149779735683,
+      "accepted_accuracy": 0.970504821327283,
+      "precision": 0.970504821327283,
+      "recall": 0.9844649021864211,
+      "f1_score": 0.9774350185661239
+    }
+  },
+  "ece_before_calibration": 0.05937440292630605,
+  "ece_after_calibration": 0.0
+}
