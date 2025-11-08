@@ -289,12 +289,6 @@ python scripts/train_trust_scorer.py --dataset all --model all
 
 # Train specific dataset and model
 python scripts/train_trust_scorer.py --dataset imdb --model lr
-
-# View results
-python scripts/show_trust_scorer_summary.py
-
-# Run QA tests
-python scripts/qa_trust_scorer.py
 ```
 
 ---
