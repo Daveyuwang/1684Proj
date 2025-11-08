@@ -159,7 +159,11 @@ class JigsawLoader(DatasetLoader):
         """Try to load from stratified sample if available."""
         # Check for sampled data in results directory
         results_dir = Path("results/llm_annotations_7b/jigsaw/jigsaw_sample")
-        sample_path = results_dir / "jigsaw_sample10k.csv"
+        
+        # Try 20k sample first, then fall back to 10k
+        sample_path = results_dir / "jigsaw_sample20k.csv"
+        if not sample_path.exists():
+            sample_path = results_dir / "jigsaw_sample10k.csv"
         
         if sample_path.exists():
             try:
@@ -171,43 +175,30 @@ class JigsawLoader(DatasetLoader):
                     print("Warning: Sampled data missing required columns")
                     return None
                 
-                # Use the entire sample as test set for LLM annotation
-                # Create minimal train/dev splits for compatibility (small samples)
+                # Use the ENTIRE sample as test set for LLM annotation and DeBERTa prediction
+                # Create minimal dummy train/dev splits for compatibility
+                # (Trust scorer will create its own splits from the joined data)
                 n_samples = len(sample_df)
                 
-                # For LLM annotation, we want to use the full 10k sample as test
-                # Create small train/dev splits just for compatibility
-                from sklearn.model_selection import train_test_split
+                # Create minimal dummy train/dev (just 1 sample each for compatibility)
+                train_df = sample_df.iloc[:1].copy()  # Minimal train
+                dev_df = sample_df.iloc[:1].copy()    # Minimal dev  
+                test_df = sample_df.copy()            # FULL sample as test
                 
-                # Take a small portion for train/dev, rest goes to test
-                n_train_dev = min(100, n_samples // 100)  # 1% for train+dev
-                
-                if n_train_dev > 0:
-                    # Split: (train+dev) vs test
-                    train_dev_df, test_df = train_test_split(
-                        sample_df,
-                        test_size=n_samples - n_train_dev,
-                        stratify=sample_df['label'],
-                        random_state=42
-                    )
-                    
-                    # Split train_dev into train and dev
-                    train_df, dev_df = train_test_split(
-                        train_dev_df,
-                        test_size=n_train_dev // 2,
-                        stratify=train_dev_df['label'],
-                        random_state=42
-                    )
+                # Use original_index as the actual index if available
+                if 'original_index' in train_df.columns:
+                    train_df = train_df.set_index('original_index')
+                    dev_df = dev_df.set_index('original_index')
+                    test_df = test_df.set_index('original_index')
                 else:
-                    # If sample is too small, use all as test
-                    train_df = sample_df.iloc[:1].copy()  # Minimal train
-                    dev_df = sample_df.iloc[:1].copy()    # Minimal dev  
-                    test_df = sample_df.copy()            # Full test
+                    train_df = train_df.reset_index(drop=True)
+                    dev_df = dev_df.reset_index(drop=True)
+                    test_df = test_df.reset_index(drop=True)
                 
                 return {
-                    'train': train_df.reset_index(drop=True),
-                    'dev': dev_df.reset_index(drop=True),
-                    'test': test_df.reset_index(drop=True)
+                    'train': train_df,
+                    'dev': dev_df,
+                    'test': test_df
                 }
                 
             except Exception as e:

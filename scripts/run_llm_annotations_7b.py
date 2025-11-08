@@ -197,9 +197,11 @@ def annotate_dataset(dataset_name: str, test_df: pd.DataFrame, output_dir: Path,
     task_type = DATASET_TASK_MAP[dataset_name]
     confidence_mapping = get_verbal_confidence_mapping()
     
-    # Extract texts for batch processing
+    # Extract texts and indices for batch processing
     texts = test_df['text'].tolist()
     gold_labels = test_df['label'].tolist()
+    # Use DataFrame index as example_id (for Jigsaw, this is original_index)
+    example_ids = test_df.index.tolist()
     
     # Check for checkpoint if resume mode
     start_idx = 0
@@ -237,13 +239,16 @@ def annotate_dataset(dataset_name: str, test_df: pd.DataFrame, output_dir: Path,
         
         chunk_texts = texts[chunk_start:chunk_end]
         chunk_labels = gold_labels[chunk_start:chunk_end]
+        chunk_ids = example_ids[chunk_start:chunk_end]
         
         # Annotate this chunk
         annotation_results = annotator.annotate_batch(chunk_texts, batch_size=batch_size)
         
         # Process results immediately (don't accumulate)
-        for rel_idx, (annotation_result, text, gold_label) in enumerate(zip(annotation_results, chunk_texts, chunk_labels)):
-            abs_idx = chunk_start + rel_idx  # Absolute index in full dataset (row_id)
+        for rel_idx, (annotation_result, text, gold_label, example_id) in enumerate(zip(annotation_results, chunk_texts, chunk_labels, chunk_ids)):
+            # Use actual DataFrame index (original_index for Jigsaw) as example_id
+            # Keep row_id for backward compatibility (position in test_df)
+            abs_idx = chunk_start + rel_idx
             
             if annotation_result.is_valid:
                 # Convert label to numeric
@@ -258,7 +263,8 @@ def annotate_dataset(dataset_name: str, test_df: pd.DataFrame, output_dir: Path,
                 
                 # Build result dict with optimized storage
                 result = {
-                    'row_id': abs_idx,
+                    'example_id': int(example_id),  # Real index (original_index for Jigsaw)
+                    'row_id': abs_idx,  # Position in test_df (for backward compatibility)
                     'text_hash': compute_text_hash(text),
                     'text_len': len(text),
                     'gold_label': int(gold_label),
@@ -280,13 +286,14 @@ def annotate_dataset(dataset_name: str, test_df: pd.DataFrame, output_dir: Path,
                 results.append(result)
             else:
                 failed_annotations.append({
-                    'row_id': abs_idx,
+                    'example_id': int(example_id),  # Real index
+                    'row_id': abs_idx,  # Position in test_df
                     'text_hash': compute_text_hash(text),
                     'text_len': len(text),
                     'error': annotation_result.error,
                     'raw_output': annotation_result.raw_response
                 })
-                logger.warning(f"Failed annotation for example {abs_idx}: {annotation_result.error}")
+                logger.warning(f"Failed annotation for example_id {example_id} (row {abs_idx}): {annotation_result.error}")
             
             # Save checkpoint to checkpoints subdirectory
             current_completed = len(results)

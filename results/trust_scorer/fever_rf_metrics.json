@@ -1,0 +1,42 @@
+{
+  "dataset": "fever",
+  "model_type": "rf",
+  "n_test": 1500,
+  "roc_auc": 0.7570831344065544,
+  "pr_auc": 0.757116095596553,
+  "brier_score": 0.20275187176040374,
+  "ece": 0.05615265174032281,
+  "policy_thresholds": {
+    "high_precision": 0.7272727272727273,
+    "balanced": 0.42105263157894735,
+    "high_coverage": 0.6923076923076923
+  },
+  "policy_metrics": {
+    "high_precision": {
+      "threshold": 0.7272727272727273,
+      "coverage": 0.33466666666666667,
+      "accepted_accuracy": 0.7888446215139442,
+      "precision": 0.7888446215139442,
+      "recall": 0.49070631970260226,
+      "f1_score": 0.6050420168067226
+    },
+    "balanced": {
+      "threshold": 0.42105263157894735,
+      "coverage": 0.5933333333333334,
+      "accepted_accuracy": 0.7044943820224719,
+      "precision": 0.7044943820224719,
+      "recall": 0.7769516728624535,
+      "f1_score": 0.7389510901591043
+    },
+    "high_coverage": {
+      "threshold": 0.6923076923076923,
+      "coverage": 0.48,
+      "accepted_accuracy": 0.7291666666666666,
+      "precision": 0.7291666666666666,
+      "recall": 0.6505576208178439,
+      "f1_score": 0.68762278978389
+    }
+  },
+  "ece_before_calibration": 0.030296273470347537,
+  "ece_after_calibration": 0.0008995983935754457
+}

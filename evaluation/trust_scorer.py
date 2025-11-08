@@ -7,16 +7,28 @@ disagreement, text characteristics, and more.
 """
 
 import logging
+import json
+import re
 import numpy as np
 import pandas as pd
 from typing import Dict, List, Any, Optional, Tuple, Union
 from pathlib import Path
-from sklearn.model_selection import train_test_split, cross_val_score
-from sklearn.metrics import classification_report, roc_auc_score, precision_recall_curve
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import (
+    classification_report, roc_auc_score, precision_recall_curve,
+    average_precision_score, brier_score_loss, accuracy_score,
+    precision_score, recall_score, f1_score
+)
 from sklearn.linear_model import LogisticRegression
-from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
-from sklearn.calibration import CalibratedClassifierCV
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.calibration import CalibratedClassifierCV, calibration_curve
+from sklearn.preprocessing import StandardScaler
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
 import joblib
+import matplotlib.pyplot as plt
+import seaborn as sns
+from scipy.stats import entropy
 
 from models.text_features import TextFeatureExtractor, create_feature_extractor
 import config
@@ -27,77 +39,297 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
+def load_joined_data(dataset_name: str) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    """
+    Load and join LLM annotations with DeBERTa predictions.
+    
+    Args:
+        dataset_name: Name of dataset (imdb, jigsaw, fever)
+        
+    Returns:
+        Tuple of (train_df, dev_df, test_df) with joined data
+    """
+    logger.info(f"Loading data for {dataset_name}...")
+    
+    # Load original dataset to get split information
+    from data.dataset_loader import IMDBLoader, JigsawLoader, FEVERLoader
+    
+    if dataset_name == 'imdb':
+        loader = IMDBLoader(dataset_name)
+    elif dataset_name == 'jigsaw':
+        loader = JigsawLoader(dataset_name)
+    elif dataset_name == 'fever':
+        loader = FEVERLoader(dataset_name)
+    else:
+        raise ValueError(f"Unknown dataset: {dataset_name}")
+    
+    original_data = loader.load_data()
+    
+    # Create mapping from row position to split
+    # Determine the size of each split to map row_ids to splits
+    train_size = len(original_data['train'])
+    dev_size = len(original_data['dev'])
+    test_size = len(original_data['test'])
+    
+    def get_split_from_row_id(row_id):
+        """Map row_id to split based on position."""
+        if row_id < train_size:
+            return 'train'
+        elif row_id < train_size + dev_size:
+            return 'dev'
+        else:
+            return 'test'
+    
+    # Load LLM annotations
+    llm_annotations_path = config.RESULTS_DIR / f"llm_annotations_7b" / dataset_name / f"{dataset_name}_llm_annotations.json"
+    with open(llm_annotations_path, 'r') as f:
+        llm_data = json.load(f)
+    llm_df = pd.DataFrame(llm_data)
+    
+    # Deduplicate LLM annotations (keep last occurrence)
+    n_before = len(llm_df)
+    llm_df = llm_df.drop_duplicates(subset='row_id', keep='last')
+    n_after = len(llm_df)
+    if n_before != n_after:
+        logger.info(f"Removed {n_before - n_after} duplicate LLM annotations (kept last occurrence)")
+    
+    # Add split information to LLM data
+    llm_df['split'] = llm_df['row_id'].apply(get_split_from_row_id)
+    
+    # Load DeBERTa predictions
+    deberta_pred_path = config.RESULTS_DIR / "deberta_predictions" / f"{dataset_name}_deberta_predictions.json"
+    with open(deberta_pred_path, 'r') as f:
+        deberta_data = json.load(f)
+    
+    # Convert DeBERTa data to DataFrame
+    deberta_df = pd.DataFrame({
+        'example_id': deberta_data['example_id'],
+        'deberta_predicted_label': deberta_data['predicted_label']
+    })
+    
+    # Add split information to DeBERTa data
+    deberta_df['split'] = deberta_df['example_id'].apply(get_split_from_row_id)
+    
+    # Add probability columns
+    probs_array = np.array(deberta_data['probabilities'])
+    num_classes = probs_array.shape[1]
+    for i in range(num_classes):
+        deberta_df[f'prob_class{i}'] = probs_array[:, i]
+    
+    # Add text if available in DeBERTa data
+    if 'text' in deberta_data:
+        deberta_df['text'] = deberta_data['text']
+    
+    # For Jigsaw, filter to 20k sample if available
+    if dataset_name == 'jigsaw':
+        # Try 20k first, then fall back to 10k
+        sample_ids_path = config.RESULTS_DIR / "llm_annotations_7b" / dataset_name / "jigsaw_sample" / "jigsaw_sample20k_ids.csv"
+        if not sample_ids_path.exists():
+            sample_ids_path = config.RESULTS_DIR / "llm_annotations_7b" / dataset_name / "jigsaw_sample" / "jigsaw_sample10k_ids.csv"
+        
+        if sample_ids_path.exists():
+            sample_ids_df = pd.read_csv(sample_ids_path)
+            # The column might be 'example_id' or 'original_index'
+            id_col = 'example_id' if 'example_id' in sample_ids_df.columns else 'original_index'
+            sample_ids = set(sample_ids_df[id_col].values)
+            # For Jigsaw, LLM annotations use 'example_id' already (not 'row_id')
+            llm_id_col = 'example_id' if 'example_id' in llm_df.columns else 'row_id'
+            llm_df = llm_df[llm_df[llm_id_col].isin(sample_ids)].copy()
+            deberta_df = deberta_df[deberta_df['example_id'].isin(sample_ids)].copy()
+            sample_size = "20k" if "20k" in str(sample_ids_path) else "10k"
+            logger.info(f"Filtered to Jigsaw {sample_size} sample: {len(llm_df)} examples")
+    
+    # Join on example IDs (row_id in LLM data, example_id in DeBERTa data)
+    # For Jigsaw, 'example_id' already exists; for others, rename 'row_id' to 'example_id'
+    if 'row_id' in llm_df.columns and 'example_id' not in llm_df.columns:
+        llm_df = llm_df.rename(columns={'row_id': 'example_id'})
+    joined_df = llm_df.merge(deberta_df, on='example_id', how='inner', suffixes=('', '_deberta'))
+    
+    # Validate join
+    assert len(joined_df) > 0, f"No matching examples after join for {dataset_name}"
+    assert joined_df['example_id'].nunique() == len(joined_df), f"Duplicate example IDs after join for {dataset_name}"
+    
+    # Log join statistics
+    logger.info(f"Join stats for {dataset_name}:")
+    logger.info(f"  LLM annotations: {len(llm_df)}")
+    logger.info(f"  DeBERTa predictions: {len(deberta_df)}")
+    logger.info(f"  Joined: {len(joined_df)}")
+    logger.info(f"  Dropped LLM: {len(llm_df) - len(joined_df)}")
+    logger.info(f"  Dropped DeBERTa: {len(deberta_df) - len(joined_df)}")
+    
+    # Create train/dev/test splits for trust scorer from the joined data
+    # Use stratified split based on trust label (LLM correct or not)
+    joined_df['trust_label_temp'] = (joined_df['llm_label'] == joined_df['gold_label']).astype(int)
+    
+    # Split: 70% train, 15% dev, 15% test
+    from sklearn.model_selection import train_test_split
+    train_df, temp_df = train_test_split(
+        joined_df, test_size=0.3, random_state=42, stratify=joined_df['trust_label_temp']
+    )
+    dev_df, test_df = train_test_split(
+        temp_df, test_size=0.5, random_state=42, stratify=temp_df['trust_label_temp']
+    )
+    
+    # Remove temporary column
+    train_df = train_df.drop(columns=['trust_label_temp'])
+    dev_df = dev_df.drop(columns=['trust_label_temp'])
+    test_df = test_df.drop(columns=['trust_label_temp'])
+    
+    # Add split column
+    train_df['split_trust'] = 'train'
+    dev_df['split_trust'] = 'dev'
+    test_df['split_trust'] = 'test'
+    
+    logger.info(f"Trust scorer splits - Train: {len(train_df)}, Dev: {len(dev_df)}, Test: {len(test_df)}")
+    
+    return train_df, dev_df, test_df
+
+
+def extract_features(df: pd.DataFrame, dev_percentiles: Optional[Dict[str, float]] = None) -> Tuple[pd.DataFrame, Dict[str, float]]:
+    """
+    Extract features for trust score prediction.
+    
+    Args:
+        df: DataFrame with joined LLM and DeBERTa data
+        dev_percentiles: Pre-computed percentiles from dev set (for test set)
+        
+    Returns:
+        Tuple of (DataFrame with features, percentiles dict)
+    """
+    features_df = df.copy()
+    
+    # LLM confidence feature (already numeric in data)
+    # llm_confidence_numeric is already in the data (0.3, 0.6, 0.9)
+    
+    # DeBERTa features
+    # Get probability columns
+    prob_cols = [col for col in df.columns if col.startswith('prob_class')]
+    probs = df[prob_cols].values
+    
+    # Max probability
+    features_df['deberta_p_max'] = probs.max(axis=1)
+    
+    # Margin (top1 - top2)
+    sorted_probs = np.sort(probs, axis=1)
+    features_df['deberta_margin'] = sorted_probs[:, -1] - sorted_probs[:, -2]
+    
+    # Entropy
+    features_df['deberta_entropy'] = np.array([entropy(p) for p in probs])
+    
+    # Disagreement feature
+    features_df['llm_deberta_disagree'] = (features_df['llm_label'] != features_df['deberta_predicted_label']).astype(int)
+    
+    # Data-driven confidence clash features
+    if dev_percentiles is None:
+        # Compute percentiles on current data (dev set)
+        p_max_25 = features_df['deberta_p_max'].quantile(0.25)
+        p_max_75 = features_df['deberta_p_max'].quantile(0.75)
+        percentiles = {'p_max_25': p_max_25, 'p_max_75': p_max_75}
+    else:
+        # Use pre-computed percentiles (for test set)
+        p_max_25 = dev_percentiles['p_max_25']
+        p_max_75 = dev_percentiles['p_max_75']
+        percentiles = dev_percentiles
+    
+    # Confidence clash flags
+    llm_high_conf = features_df['llm_confidence_numeric'] >= 0.9
+    llm_low_conf = features_df['llm_confidence_numeric'] <= 0.3
+    deberta_low_conf = features_df['deberta_p_max'] <= p_max_25
+    deberta_high_conf = features_df['deberta_p_max'] >= p_max_75
+    
+    features_df['confidence_clash_high_low'] = (llm_high_conf & deberta_low_conf).astype(int)
+    features_df['confidence_clash_low_high'] = (llm_low_conf & deberta_high_conf).astype(int)
+    
+    # Text features (lightweight)
+    # Token count
+    if 'text' in features_df.columns:
+        features_df['token_count'] = features_df['text'].apply(lambda x: len(str(x).split()) if pd.notna(x) else 0)
+        
+        # Punctuation density
+        def punct_density(text):
+            if pd.isna(text) or len(str(text)) == 0:
+                return 0.0
+            text_str = str(text)
+            punct_count = len(re.findall(r'[^\w\s]', text_str))
+            return punct_count / len(text_str)
+        
+        features_df['punctuation_density'] = features_df['text'].apply(punct_density)
+        
+        # Negation present (binary)
+        negation_pattern = r'\b(no|not|never|nothing|none|nobody|nowhere|neither|nor|can\'t|cannot|won\'t|wouldn\'t|shouldn\'t|couldn\'t)\b'
+        features_df['negation_present'] = features_df['text'].apply(
+            lambda x: 1 if pd.notna(x) and re.search(negation_pattern, str(x).lower()) else 0
+        )
+    elif 'text_len' in features_df.columns:
+        # Approximate token count from text length
+        features_df['token_count'] = features_df['text_len'] / 5.0  # rough approximation
+        features_df['punctuation_density'] = 0.0
+        features_df['negation_present'] = 0
+    else:
+        features_df['token_count'] = 0
+        features_df['punctuation_density'] = 0.0
+        features_df['negation_present'] = 0
+    
+    # Target variable: trust label (1 if LLM correct, 0 if incorrect)
+    features_df['trust_label'] = (features_df['llm_label'] == features_df['gold_label']).astype(int)
+    
+    return features_df, percentiles
+
+
 class TrustScoreClassifier:
     """Classifier to predict trustworthiness of LLM annotations."""
     
-    def __init__(self, model_type: str = "logistic_regression", task_type: str = "sentiment"):
+    def __init__(self, dataset_name: str, model_type: str = "lr"):
         """
         Initialize trust score classifier.
         
         Args:
-            model_type: Type of classifier to use
-            task_type: Type of annotation task
-            
-        TODO: Implement classifier initialization
+            dataset_name: Name of dataset (imdb, jigsaw, fever)
+            model_type: Type of classifier ('lr' or 'rf')
         """
+        self.dataset_name = dataset_name
         self.model_type = model_type
-        self.task_type = task_type
-        self.model = None
-        self.feature_extractor = create_feature_extractor()
+        self.pipeline = None
         self.feature_columns = []
-        self.threshold = 0.5
+        self.continuous_features = []
+        self.discrete_features = []
+        self.dev_percentiles = None
+        self.policy_thresholds = {}
         self.trained = False
         
-        # TODO: Initialize classifier based on model_type
-        # 1. Logistic Regression (default)
-        # 2. Random Forest
-        # 3. Gradient Boosting
-        # 4. Support Vector Machine
-        
-        logger.info(f"TODO: Initialize {model_type} classifier for {task_type} task")
+        logger.info(f"Initialized {model_type} classifier for {dataset_name}")
     
-    def extract_features(self, annotations_df: pd.DataFrame) -> pd.DataFrame:
-        """
-        Extract features for trust score prediction.
-        
-        Args:
-            annotations_df: DataFrame with LLM annotations and metadata
-            
-        Returns:
-            DataFrame with extracted features
-            
-        TODO: Implement feature extraction
-        """
-        # TODO: Implement comprehensive feature extraction
-        # 1. LLM confidence features (verbal to numeric mapping)
-        # 2. Supervised model disagreement features
-        # 3. Text features (negation, hedges, sentiment, readability)
-        # 4. Probability distribution features (entropy, max probability)
-        # 5. Cross-modal features (LLM vs supervised agreement)
-        
-        logger.info(f"TODO: Extract features for {len(annotations_df)} annotations")
-        
-        # Placeholder implementation
-        features_df = annotations_df.copy()
-        
-        # Add placeholder feature columns
-        feature_names = [
-            "llm_confidence_numeric",
-            "supervised_disagreement", 
-            "probability_entropy",
-            "max_probability",
-            "text_negation_density",
-            "text_hedge_density",
-            "text_sentiment_score",
-            "text_readability_score"
+    def _define_feature_columns(self):
+        """Define which features to use for training."""
+        self.feature_columns = [
+            'llm_confidence_numeric',
+            'deberta_p_max',
+            'deberta_margin',
+            'deberta_entropy',
+            'llm_deberta_disagree',
+            'confidence_clash_high_low',
+            'confidence_clash_low_high',
+            'token_count',
+            'punctuation_density',
+            'negation_present'
         ]
         
-        for feature in feature_names:
-            features_df[f"trust_feat_{feature}"] = 0.0  # TODO: Actual feature values
+        # Define continuous vs discrete features
+        self.continuous_features = [
+            'deberta_p_max',
+            'deberta_margin',
+            'deberta_entropy',
+            'token_count',
+            'punctuation_density'
+        ]
         
-        self.feature_columns = [f"trust_feat_{f}" for f in feature_names]
-        
-        return features_df
+        self.discrete_features = [
+            'llm_confidence_numeric',
+            'llm_deberta_disagree',
+            'confidence_clash_high_low',
+            'confidence_clash_low_high',
+            'negation_present'
+        ]
     
     def prepare_training_data(self, annotations_df: pd.DataFrame, gold_labels: pd.Series) -> Tuple[np.ndarray, np.ndarray]:
         """

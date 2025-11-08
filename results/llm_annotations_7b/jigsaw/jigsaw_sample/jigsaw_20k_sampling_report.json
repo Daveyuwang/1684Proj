@@ -1,0 +1,35 @@
+{
+  "sample_size": 20000,
+  "full_dataset_size": 1999514,
+  "sampling_rate": 0.010002430590633524,
+  "random_seed": 42,
+  "stratification": "by_label",
+  "label_distribution": {
+    "full_dataset": {
+      "toxic": 159782,
+      "non_toxic": 1839732,
+      "toxic_rate": 0.07991041823163028
+    },
+    "sample": {
+      "toxic": 1598,
+      "non_toxic": 18402,
+      "toxic_rate": 0.0799
+    }
+  },
+  "split_distribution": {
+    "full_dataset": {
+      "train": 1804874,
+      "dev": 97320,
+      "test": 97320
+    },
+    "sample": {
+      "train": 18115,
+      "dev": 944,
+      "test": 941
+    }
+  },
+  "original_index_range": {
+    "min": 209,
+    "max": 1999347
+  }
+}

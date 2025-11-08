@@ -1,0 +1,42 @@
+{
+  "dataset": "jigsaw",
+  "model_type": "lr",
+  "n_test": 3000,
+  "roc_auc": 0.9740942141430636,
+  "pr_auc": 0.9892915482797119,
+  "brier_score": 0.04021274198449462,
+  "ece": 0.0031897247964100786,
+  "policy_thresholds": {
+    "high_precision": 0.9985714285714286,
+    "balanced": 0.5,
+    "high_coverage": 0.25
+  },
+  "policy_metrics": {
+    "high_precision": {
+      "threshold": 0.9985714285714286,
+      "coverage": 0.34933333333333333,
+      "accepted_accuracy": 0.9990458015267175,
+      "precision": 0.9990458015267175,
+      "recall": 0.44954916273078577,
+      "f1_score": 0.6200769914124963
+    },
+    "balanced": {
+      "threshold": 0.5,
+      "coverage": 0.7703333333333333,
+      "accepted_accuracy": 0.9731717871051493,
+      "precision": 0.9731717871051493,
+      "recall": 0.965650493774152,
+      "f1_score": 0.969396551724138
+    },
+    "high_coverage": {
+      "threshold": 0.25,
+      "coverage": 0.7736666666666666,
+      "accepted_accuracy": 0.968978888410168,
+      "precision": 0.968978888410168,
+      "recall": 0.965650493774152,
+      "f1_score": 0.9673118279569892
+    }
+  },
+  "ece_before_calibration": 0.0638734783009425,
+  "ece_after_calibration": 0.0
+}

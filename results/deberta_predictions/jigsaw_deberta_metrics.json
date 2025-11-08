@@ -1,28 +1,8 @@
 {
-  "dataset": "jigsaw",
-  "model_path": "D:\\1684Proj\\outputs\\jigsaw\\deberta-v3-base\\run1\\best_model_calibrated",
-  "test_size": 97320,
-  "num_classes": 2,
-  "accuracy": 0.9508836826962598,
-  "precision": 0.7130669699985781,
-  "recall": 0.6448501993056448,
-  "f1_score": 0.6772451046590142,
-  "ece": 0.012941169486435884,
-  "brier_score": 0.03744420126788403,
-  "per_class_metrics": {
-    "non-toxic": {
-      "precision": 0.9694086634842225,
-      "recall": 0.9774633416347454,
-      "f1_score": 0.9734193404882389,
-      "support": 89543
-    },
-    "toxic": {
-      "precision": 0.7130669699985781,
-      "recall": 0.6448501993056448,
-      "f1_score": 0.6772451046590142,
-      "support": 7777
-    }
-  },
-  "average_entropy": 0.09159116793599112,
-  "average_confidence": 0.9636738625601198
+  "n_examples": 20000,
+  "accuracy": 0.95165,
+  "id_range": {
+    "min": 209,
+    "max": 1999347
+  }
 }
