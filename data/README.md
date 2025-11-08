@@ -35,8 +35,6 @@ This directory contains three benchmark datasets for annotation reliability anal
   - Test: 97,320 samples
   - Total: 1,999,514 samples
 - Stratified 20k sample (used for LLM annotations): 20,000 samples sampled from test set
-
-**Sample File**: `jigsaw/jigsaw_sample20k.csv` (stratified subset for LLM annotations)
 ---
 
 ## FEVER
@@ -78,18 +76,8 @@ This directory contains three benchmark datasets for annotation reliability anal
 ## Notes
 
 **Label Mappings**:
-
-*IMDb*:
-- `negative` → 0
-- `positive` → 1
-
-*Jigsaw*:
-- `non-toxic` → 0
-- `toxic` → 1
-
-*FEVER*:
-- `SUPPORTS` → 0
-- `REFUTES` → 1
-- `NOT ENOUGH INFO` → 2
+- **IMDb**: `negative` → 0, `positive` → 1
+- **Jigsaw**: `non-toxic` → 0, `toxic` → 1
+- **FEVER**: `SUPPORTS` → 0, `REFUTES` → 1, `NOT ENOUGH INFO` → 2
 
 
