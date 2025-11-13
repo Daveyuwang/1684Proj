@@ -10,3 +10,6 @@ jsonschema
 requests
 tqdm
 huggingface_hub
+dash
+dash-bootstrap-components
+plotly
