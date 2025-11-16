@@ -1,0 +1,44 @@
+{
+  "n_test": 3000,
+  "roc_auc": 0.7777517198749133,
+  "pr_auc": 0.9001291753242545,
+  "brier_score": 0.13969021123895492,
+  "ece": 0.01573752332477279,
+  "policy_metrics": {
+    "high_precision": {
+      "threshold": 0.9242603550295858,
+      "coverage": 0.4083333333333333,
+      "accepted_accuracy": 0.9322448979591836,
+      "precision": 0.9322448979591836,
+      "recall": 0.49033920137398024,
+      "f1_score": 0.642656162070906
+    },
+    "balanced": {
+      "threshold": 0.44594594594594594,
+      "coverage": 0.998,
+      "accepted_accuracy": 0.7768871075484302,
+      "precision": 0.7768871075484302,
+      "recall": 0.9987118935165307,
+      "f1_score": 0.8739432650760849
+    },
+    "high_coverage": {
+      "threshold": 0.6,
+      "coverage": 0.7,
+      "accepted_accuracy": 0.888095238095238,
+      "precision": 0.888095238095238,
+      "recall": 0.8007728638900816,
+      "f1_score": 0.8421765635583653
+    }
+  },
+  "ece_before_calibration": 0.22659901003380867,
+  "ece_after_calibration": 1.1522264623901417e-16,
+  "config_name": "llm_deberta",
+  "dataset": "jigsaw",
+  "n_features": 4,
+  "features": [
+    "llm_confidence_numeric",
+    "deberta_p_max",
+    "deberta_margin",
+    "deberta_entropy"
+  ]
+}

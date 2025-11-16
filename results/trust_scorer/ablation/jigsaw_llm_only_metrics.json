@@ -1,0 +1,41 @@
+{
+  "n_test": 3000,
+  "roc_auc": 0.6496555131021482,
+  "pr_auc": 0.8325128427314226,
+  "brier_score": 0.15550659889586474,
+  "ece": 0.02057507050522535,
+  "policy_metrics": {
+    "high_precision": {
+      "threshold": 0.8268223922674185,
+      "coverage": 0.827,
+      "accepted_accuracy": 0.8391777509068924,
+      "precision": 0.8391777509068924,
+      "recall": 0.8939458995276943,
+      "f1_score": 0.8656964656964657
+    },
+    "balanced": {
+      "threshold": 0.5357833655705996,
+      "coverage": 1.0,
+      "accepted_accuracy": 0.7763333333333333,
+      "precision": 0.7763333333333333,
+      "recall": 1.0,
+      "f1_score": 0.874085194220304
+    },
+    "high_coverage": {
+      "threshold": 0.8268223922674185,
+      "coverage": 0.827,
+      "accepted_accuracy": 0.8391777509068924,
+      "precision": 0.8391777509068924,
+      "recall": 0.8939458995276943,
+      "f1_score": 0.8656964656964657
+    }
+  },
+  "ece_before_calibration": 0.2574539904288676,
+  "ece_after_calibration": 0.0,
+  "config_name": "llm_only",
+  "dataset": "jigsaw",
+  "n_features": 1,
+  "features": [
+    "llm_confidence_numeric"
+  ]
+}

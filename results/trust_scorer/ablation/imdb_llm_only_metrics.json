@@ -1,0 +1,41 @@
+{
+  "n_test": 1816,
+  "roc_auc": 0.738370806408781,
+  "pr_auc": 0.977100895185167,
+  "brier_score": 0.036753283419096575,
+  "ece": 0.0025558193652709966,
+  "policy_metrics": {
+    "high_precision": {
+      "threshold": 0.9794313369630974,
+      "coverage": 0.9052863436123348,
+      "accepted_accuracy": 0.9787104622871047,
+      "precision": 0.9787104622871047,
+      "recall": 0.9257767548906789,
+      "f1_score": 0.9515079834417505
+    },
+    "balanced": {
+      "threshold": 0.5,
+      "coverage": 1.0,
+      "accepted_accuracy": 0.9570484581497798,
+      "precision": 0.9570484581497798,
+      "recall": 1.0,
+      "f1_score": 0.9780528981429375
+    },
+    "high_coverage": {
+      "threshold": 0.5,
+      "coverage": 1.0,
+      "accepted_accuracy": 0.9570484581497798,
+      "precision": 0.9570484581497798,
+      "recall": 1.0,
+      "f1_score": 0.9780528981429375
+    }
+  },
+  "ece_before_calibration": 0.3606375599244628,
+  "ece_after_calibration": 9.909428649546851e-18,
+  "config_name": "llm_only",
+  "dataset": "imdb",
+  "n_features": 1,
+  "features": [
+    "llm_confidence_numeric"
+  ]
+}

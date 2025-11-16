@@ -1,0 +1,43 @@
+{
+  "n_test": 3000,
+  "roc_auc": 0.6827274710943914,
+  "pr_auc": 0.8558009185332509,
+  "brier_score": 0.15838058362640792,
+  "ece": 0.03083323984271861,
+  "policy_metrics": {
+    "high_precision": {
+      "threshold": 0.8687224669603524,
+      "coverage": 0.48133333333333334,
+      "accepted_accuracy": 0.8635734072022161,
+      "precision": 0.8635734072022161,
+      "recall": 0.5354229282954057,
+      "f1_score": 0.6610124569308243
+    },
+    "balanced": {
+      "threshold": 0.46504559270516727,
+      "coverage": 0.9953333333333333,
+      "accepted_accuracy": 0.7776289350301406,
+      "precision": 0.7776289350301406,
+      "recall": 0.9969944182052383,
+      "f1_score": 0.8737535277516463
+    },
+    "high_coverage": {
+      "threshold": 0.55,
+      "coverage": 0.8766666666666667,
+      "accepted_accuracy": 0.808745247148289,
+      "precision": 0.808745247148289,
+      "recall": 0.9132674967797338,
+      "f1_score": 0.8578342407743497
+    }
+  },
+  "ece_before_calibration": 0.24716445683710916,
+  "ece_after_calibration": 6.010007306637514e-17,
+  "config_name": "deberta_only",
+  "dataset": "jigsaw",
+  "n_features": 3,
+  "features": [
+    "deberta_p_max",
+    "deberta_margin",
+    "deberta_entropy"
+  ]
+}

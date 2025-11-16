@@ -1,0 +1,44 @@
+{
+  "n_test": 1816,
+  "roc_auc": 0.8694601811690419,
+  "pr_auc": 0.990855466575715,
+  "brier_score": 0.036591011311070676,
+  "ece": 0.01034988896490513,
+  "policy_metrics": {
+    "high_precision": {
+      "threshold": 1.0,
+      "coverage": 0.33645374449339205,
+      "accepted_accuracy": 0.9950900163666121,
+      "precision": 0.9950900163666121,
+      "recall": 0.34982738780207134,
+      "f1_score": 0.5176670923797361
+    },
+    "balanced": {
+      "threshold": 0.5454545454545454,
+      "coverage": 1.0,
+      "accepted_accuracy": 0.9570484581497798,
+      "precision": 0.9570484581497798,
+      "recall": 1.0,
+      "f1_score": 0.9780528981429375
+    },
+    "high_coverage": {
+      "threshold": 0.5454545454545454,
+      "coverage": 1.0,
+      "accepted_accuracy": 0.9570484581497798,
+      "precision": 0.9570484581497798,
+      "recall": 1.0,
+      "f1_score": 0.9780528981429375
+    }
+  },
+  "ece_before_calibration": 0.30316709656162416,
+  "ece_after_calibration": 6.422777828409997e-17,
+  "config_name": "llm_deberta",
+  "dataset": "imdb",
+  "n_features": 4,
+  "features": [
+    "llm_confidence_numeric",
+    "deberta_p_max",
+    "deberta_margin",
+    "deberta_entropy"
+  ]
+}
