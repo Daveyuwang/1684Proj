@@ -12,7 +12,6 @@ This project implements two main tracks:
 
 - **IMDb**: Sentiment analysis dataset (positive/negative)
 - **Jigsaw**: Toxicity classification dataset (toxic/non-toxic)
-- **CrisisBench**: Crisis tweet classification dataset (crisis/not_crisis)
 - **FEVER**: Fact verification dataset (supports/refutes)
 
 ## Project Structure
@@ -21,7 +20,7 @@ This project implements two main tracks:
 1684Proj/
 ├── config.py                     # Configuration settings
 ├── requirements.txt              # Python dependencies
-├── test_datasets.py             # Test script for dataset loading
+├── test_datasets.py              # Test script for dataset loading
 ├── data/
 │   └── dataset_loader.py         # Dataset loading utilities
 ├── llm/                          # LLM annotation module
@@ -30,35 +29,27 @@ This project implements two main tracks:
 ├── models/                       # Supervised baseline models
 │   ├── baseline_models.py        # Pre-trained transformer classifiers
 │   └── text_features.py          # Text feature extraction
-├── evaluation/                   # Trust scoring and metrics
-│   ├── trust_scorer.py           # Trust score classifier
-│   ├── hard_cases.py             # Hard case identification
-│   └── metrics.py                # Evaluation metrics
+├── evaluation/                   # Trust scoring
+│   └── trust_scorer.py           # Trust score classifier
 ├── dashboard/                    # Interactive visualization
 │   ├── app.py                    # Main Plotly Dash application
 │   └── components/               # Dashboard UI components
 │       ├── overview.py           # High-level statistics
 │       ├── explorer.py           # Filterable annotation table
-│       ├── confidence_regions.py # Confidence threshold visualization
-│       ├── fairness.py           # Subgroup performance analysis
-│       └── export.py             # Export functionality
-├── pipeline/                     # End-to-end workflows
-│   ├── annotation_pipeline.py    # Complete annotation workflow
-│   └── experiment_runner.py      # Experiment orchestration
+│       └── confidence_regions.py # Confidence threshold visualization
 ├── utils/                        # Utility functions
 │   ├── validation.py             # JSON schema validation
 │   └── visualization.py          # Plotting utilities
 ├── scripts/                      # Executable scripts
-│   ├── run_annotation.py         # Run LLM annotation
+│   ├── run_llm_annotations.py    # Run LLM annotation
 │   ├── train_trust_scorer.py     # Train trust classifier
-│   └── launch_dashboard.py       # Start dashboard
+│   └── train_baseline_models.py  # Train baseline models
 ├── tests/                        # Test suite
 │   ├── test_structure.py         # Structure validation
-│   ├── test_llm.py              # LLM module tests
+│   ├── test_llm.py               # LLM module tests
 │   ├── test_baseline_models.py   # Baseline model tests
 │   ├── test_evaluation.py        # Evaluation module tests
 │   ├── test_dashboard.py         # Dashboard component tests
-│   ├── test_pipeline.py          # Pipeline tests
 │   └── test_utils.py             # Utility function tests
 ├── results/                      # Generated outputs
 └── models/                       # Saved model weights
@@ -89,6 +80,11 @@ print(f"Dev: {len(imdb_data['dev'])} samples")
 print(f"Test: {len(imdb_data['test'])} samples")
 ```
 
+### Run Dashboard
+```bash
+python dashboard/app.py
+```
+
 ## Features
 
 ### LLM Annotation (Track 1)
@@ -96,7 +92,7 @@ print(f"Test: {len(imdb_data['test'])} samples")
 - **Structured JSON output** with label, confidence, and rationale
 - **Batch processing** with progress tracking
 - **Schema validation** for output quality control
-- **Multiple task support** (sentiment, toxicity, crisis, fact verification)
+- **Multiple task support** (sentiment, toxicity, fact verification)
 
 ### Trust Score Prediction
 - **Feature extraction** combining LLM confidence, supervised model disagreement, text features
@@ -114,15 +110,7 @@ print(f"Test: {len(imdb_data['test'])} samples")
 - **Plotly Dash interface** with multi-page layout
 - **Confidence region visualization** with threshold analysis
 - **Filterable annotation explorer** with detailed views
-- **Fairness metrics** and subgroup analysis
-- **Export functionality** for human review cases
 - **Real-time filtering** and drill-down capabilities
-
-### Evaluation Metrics
-- **Agreement metrics**: Krippendorff's alpha, Cohen's kappa
-- **Calibration**: Expected Calibration Error (ECE), Brier score
-- **Fairness**: Subgroup error rates and bias analysis
-- **Trust prediction**: ROC-AUC, precision-recall curves
 
 ## Configuration
 
@@ -131,7 +119,6 @@ The `config.py` file contains:
 ### Datasets
 - IMDb: Sentiment analysis (positive/negative)
 - Jigsaw: Toxicity classification (toxic/non-toxic)
-- CrisisBench: Crisis classification (crisis/not_crisis)
 - FEVER: Fact verification (supports/refutes)
 
 ### Model Configurations
@@ -168,7 +155,6 @@ Each dataset is loaded with the following structure:
 ### Additional Dependencies
 - `nltk` - Natural language processing
 - `textstat` - Readability metrics
-- `krippendorff` - Agreement metrics
 - `matplotlib`/`seaborn` - Static plotting
 - `requests` - HTTP requests
 - `tqdm` - Progress bars
@@ -177,15 +163,6 @@ Each dataset is loaded with the following structure:
 
 Run the complete test suite:
 ```bash
-# Test all modules
-python tests/test_structure.py
-python tests/test_llm.py
-python tests/test_baseline_models.py
-python tests/test_evaluation.py
-python tests/test_dashboard.py
-python tests/test_pipeline.py
-python tests/test_utils.py
-
 # Run all tests at once
 python -m pytest tests/ -v
 ```
