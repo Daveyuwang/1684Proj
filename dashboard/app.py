@@ -12,6 +12,8 @@ from dashboard.data_loader import get_data_loader
 from dashboard.components.overview import create_overview_page
 from dashboard.components.explorer import create_explorer_page
 from dashboard.components.confidence_regions import create_confidence_page
+from dashboard.components.fairness import create_fairness_page
+from dashboard.components.export import create_export_page
 
 
 # Initialize Dash app with Bootstrap theme
@@ -76,22 +78,6 @@ app.layout = html.Div([
 
 
 # Page components are imported from components module
-
-
-def create_fairness_page():
-    """Create the fairness analysis page."""
-    return html.Div([
-        html.H1("Fairness Analysis", className="mb-4"),
-        html.P("Fairness analysis page - to be implemented"),
-    ])
-
-
-def create_export_page():
-    """Create the export page."""
-    return html.Div([
-        html.H1("Export", className="mb-4"),
-        html.P("Export page - to be implemented"),
-    ])
 
 
 # Callback for page routing
