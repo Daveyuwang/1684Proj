@@ -1,15 +1,6 @@
-torch
-transformers
-datasets
-scikit-learn
-numpy
-pandas
-matplotlib
-seaborn
-jsonschema
-requests
-tqdm
-huggingface_hub
+# Dashboard dependencies
 dash
 dash-bootstrap-components
 plotly
+pandas
+numpy
