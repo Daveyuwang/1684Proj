@@ -150,6 +150,7 @@ Selective annotation highlights:
   </tbody>
 </table>
 
+For detailed metrics, predictions, plots, and ablation studies, explore the `results/` directory.
 
 ---
 
@@ -190,6 +191,7 @@ Selective annotation highlights:
   </tbody>
 </table>
 
+For dataset structure, statistics, label mappings, and download information, see `data/README.md`.
 
 ---
 
@@ -204,22 +206,22 @@ pip install -r requirements.txt
 
 # Usage
 
+### Launch dashboard
+```
+python dashboard/app.py
+```
+
 ### Generate LLM annotations
 ```
-python src/llm_annotation/run_llm.py
+python scripts/run_llm_annotations.py
 ```
 
 ### Train the baseline model
 ```
-python src/baseline/train.py
+python scripts/train_baseline_models.py
 ```
 
 ### Train trust scorer
 ```
-python src/trust_scorer/train.py
-```
-
-### Launch dashboard
-```
-python dashboard/app.py
+python scripts/train_trust_scorer.py
 ```
