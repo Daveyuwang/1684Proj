@@ -59,6 +59,20 @@ def create_explorer_page():
                         ),
                     ], width=3),
                     dbc.Col([
+                        dbc.Label("Filter Type:", className="fw-bold"),
+                        dcc.Dropdown(
+                            id="explorer-subset-filter",
+                            options=[
+                                {"label": "All Data", "value": "all"},
+                                {"label": "Hard Cases Only", "value": "hard_cases"},
+                            ],
+                            value="all",
+                            clearable=False,
+                        ),
+                    ], width=3),
+                ], className="mb-3"),
+                dbc.Row([
+                    dbc.Col([
                         dbc.Label("Label Class:", className="fw-bold"),
                         dcc.Dropdown(
                             id="explorer-label-filter",
@@ -67,8 +81,6 @@ def create_explorer_page():
                             clearable=False,
                         ),
                     ], width=3),
-                ], className="mb-3"),
-                dbc.Row([
                     dbc.Col([
                         dbc.Label("Text Length Range:", className="fw-bold"),
                         dcc.RangeSlider(
@@ -98,6 +110,8 @@ def create_explorer_page():
         
         # Data table
         html.Div(id="explorer-table-container"),
+        html.Hr(),
+        html.Div(id="explorer-detail-view", className="p-3 border rounded bg-light")
     ])
 
 
@@ -128,10 +142,11 @@ def update_label_filter(dataset_name):
      Input("explorer-confidence-filter", "value"),
      Input("explorer-agreement-filter", "value"),
      Input("explorer-label-filter", "value"),
-     Input("explorer-length-slider", "value")]
+     Input("explorer-length-slider", "value"),
+     Input("explorer-subset-filter", "value")]
 )
 def update_explorer_table(dataset_name, confidence_filter, agreement_filter, 
-                          label_filter, length_range):
+                          label_filter, length_range, subset_filter):
     """Update the explorer table based on filters."""
     if not dataset_name:
         return html.Div(), html.Div(), 10000, [0, 10000]
@@ -168,6 +183,15 @@ def update_explorer_table(dataset_name, confidence_filter, agreement_filter,
     else:
         max_length = 10000
     
+    # Apply Hard Cases Filter
+    if subset_filter == "hard_cases":
+        hard_cases_df = data_loader.load_hard_cases(dataset_name)
+        if not hard_cases_df.empty:
+            # Filter df to only include rows present in hard_cases_df
+            # Assuming 'row_id' is the common key
+            hard_ids = hard_cases_df['row_id'].unique()
+            filtered_df = filtered_df[filtered_df['row_id'].isin(hard_ids)]
+
     # Prepare columns for display
     display_columns = [
         {'name': 'Row ID', 'id': 'row_id', 'type': 'numeric'},
@@ -183,6 +207,10 @@ def update_explorer_table(dataset_name, confidence_filter, agreement_filter,
     if 'text_len' in filtered_df.columns:
         display_columns.insert(2, {'name': 'Text Length', 'id': 'text_len', 'type': 'numeric'})
     
+    # Update Display Columns to include Rationale if it exists
+    if 'rationale' in filtered_df.columns:
+         display_columns.append({'name': 'Rationale', 'id': 'rationale', 'type': 'text'})
+
     # Prepare data for table
     table_data = filtered_df[['row_id', 'gold_label_str', 'llm_label_str', 
                               'confidence_level', 'llm_confidence_numeric', 
@@ -208,6 +236,7 @@ def update_explorer_table(dataset_name, confidence_filter, agreement_filter,
         page_action="native",
         sort_action="native",
         filter_action="native",
+        row_selectable='single', # Enable single row selection
         style_cell={
             'textAlign': 'left',
             'padding': '10px',
@@ -264,4 +293,37 @@ def export_to_csv(n_clicks, table_data):
     
     df = pd.DataFrame(table_data)
     return dcc.send_data_frame(df.to_csv, "annotations_export.csv", index=False)
+
+
+@callback(
+    Output("explorer-detail-view", "children"),
+    [Input("explorer-data-table", "selected_rows"),
+     Input("explorer-data-table", "data")]
+)
+def display_selected_details(selected_rows, rows):
+    if not selected_rows or not rows:
+        return html.Div("Select a row to view details.", className="text-muted")
+    
+    row_data = rows[selected_rows[0]]
+    
+    return html.Div([
+        html.H4(f"Details for Row {row_data.get('row_id', 'N/A')}"),
+        html.H5("Full Text", className="mt-3"),
+        html.P(row_data.get('text', 'Text not available in table view (ensure "text" is in data)')),
+        
+        html.H5("Rationale", className="mt-3"),
+        html.P(row_data.get('rationale', 'No rationale available.')),
+        
+        dbc.Row([
+            dbc.Col([
+                html.Strong("Gold Label: "), html.Span(row_data.get('gold_label_str')),
+            ], width=4),
+            dbc.Col([
+                html.Strong("LLM Label: "), html.Span(row_data.get('llm_label_str')),
+            ], width=4),
+            dbc.Col([
+                html.Strong("Confidence: "), html.Span(f"{row_data.get('llm_confidence_numeric', 0):.2f}"),
+            ], width=4),
+        ], className="mt-3")
+    ])
 
